@@ -45,13 +45,20 @@
     <Compile Include="EventSystem\UIBehaviour.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI\Core\CanvasUpdateRegistry.cs" />
+    <Compile Include="UI\Core\Culling\IClipRegion.cs" />
     <Compile Include="UI\Core\Graphic.cs" />
+    <Compile Include="UI\Core\Image.cs" />
+    <Compile Include="UI\Core\IMaskable.cs" />
+    <Compile Include="UI\Core\IMaterialModifier.cs" />
+    <Compile Include="UI\Core\IndexedSet.cs" />
     <Compile Include="UI\Core\Layout\ILayoutElement.cs" />
     <Compile Include="UI\Core\Layout\LayoutRebuilder.cs" />
+    <Compile Include="UI\Core\MaskableGraphic.cs" />
     <Compile Include="UI\Core\SetPropertyUtility.cs" />
     <Compile Include="UI\Core\Utility\ListPool.cs" />
     <Compile Include="UI\Core\Utility\ObjectPool.cs" />
     <Compile Include="UI\Core\Utility\VertexHelper.cs" />
+    <Compile Include="UI\Core\VertexModifiers\IMeshModifier.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

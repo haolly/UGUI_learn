@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ContentModelStore">
-    <e p="C:\Users\ejoy\.Rider2019.2\system\extResources" t="IncludeRecursive" />
-    <e p="C:\Users\ejoy\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_UGUI_learn.764920750.00" t="ExcludeRecursive" />
-    <e p="C:\Users\ejoy\source\repos\UGUI_learn" t="IncludeFlat">
+    <e p="C:\Users\liuhao\.Rider2019.2\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\liuhao\.Rider2019.2\system\resharper-host\local\Transient\ReSharperHost\v192\SolutionCaches\_UGUI_learn.-1767114039.00" t="ExcludeRecursive" />
+    <e p="D:\Dev\UGUI_learn" t="IncludeFlat">
       <e p="packages" t="ExcludeRecursive" />
       <e p="UGUI_learn" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />
@@ -18,16 +18,27 @@
         <e p="UI" t="Include">
           <e p="Core" t="Include">
             <e p="CanvasUpdateRegistry.cs" t="Include" />
+            <e p="Culling" t="Include">
+              <e p="IClipRegion.cs" t="Include" />
+            </e>
             <e p="Graphic.cs" t="Include" />
+            <e p="Image.cs" t="Include" />
+            <e p="IMaskable.cs" t="Include" />
+            <e p="IMaterialModifier.cs" t="Include" />
+            <e p="IndexedSet.cs" t="Include" />
             <e p="Layout" t="Include">
               <e p="ILayoutElement.cs" t="Include" />
               <e p="LayoutRebuilder.cs" t="Include" />
             </e>
+            <e p="MaskableGraphic.cs" t="Include" />
             <e p="SetPropertyUtility.cs" t="Include" />
             <e p="Utility" t="Include">
               <e p="ListPool.cs" t="Include" />
               <e p="ObjectPool.cs" t="Include" />
               <e p="VertexHelper.cs" t="Include" />
+            </e>
+            <e p="VertexModifiers" t="Include">
+              <e p="IMeshModifier.cs" t="Include" />
             </e>
           </e>
         </e>

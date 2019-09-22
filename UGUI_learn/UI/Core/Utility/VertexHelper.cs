@@ -13,8 +13,10 @@ namespace UnityEngine.UI
         private List<Vector2> m_Uv3S = ListPool<Vector2>.Get();
         private List<Vector3> m_Normals = ListPool<Vector3>.Get();
         private List<Vector4> m_Tangents = ListPool<Vector4>.Get();
+        
         private List<int> m_Indices = ListPool<int>.Get();
 
+        //todo
         private static readonly Vector4 s_DefaultTangent = new Vector4(1.0f, 0.0f, 0.0f, -1.0f);
         private static readonly Vector3 s_DefaultNormal = Vector3.back;
 
@@ -69,5 +71,51 @@ namespace UnityEngine.UI
         }
         
         //todo 
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddVert(Vector3 position, Color32 color, Vector2 uv0, Vector2 uv1, Vector3 normal, Vector4 tangent)
+        {
+            m_Positions.Add(position);
+            m_Colors.Add(color);
+            m_Uv0S.Add(uv0);
+            m_Uv1S.Add(uv1);
+            m_Uv2S.Add(Vector2.zero);
+            m_Uv3S.Add(Vector2.zero);
+            m_Normals.Add(normal);
+            m_Tangents.Add(tangent);
+        }
+
+        public void AddVert(Vector3 position, Color32 color, Vector2 uv0)
+        {
+            AddVert(position, color, uv0, Vector2.zero, s_DefaultNormal, s_DefaultTangent);
+        }
+
+        public void AddTriangle(int idx0, int idx1, int idx2)
+        {
+            m_Indices.Add(idx0);
+            m_Indices.Add(idx1);
+            m_Indices.Add(idx2);
+        }
+
+        public void FillMesh(Mesh mesh)
+        {
+            mesh.Clear();
+            if(m_Positions.Count >= 65000)
+                throw new ArgumentException("Mesh can not have more than 65000 vertices");
+            
+            mesh.SetVertices(m_Positions);
+            mesh.SetColors(m_Colors);
+            mesh.SetUVs(0, m_Uv0S);
+            mesh.SetUVs(1, m_Uv1S);
+            mesh.SetUVs(2, m_Uv2S);
+            mesh.SetUVs(3, m_Uv3S);
+            mesh.SetNormals(m_Normals);
+            mesh.SetTangents(m_Tangents);
+            mesh.SetTriangles(m_Indices, 0);
+            mesh.RecalculateBounds();
+        }
     }
 }

@@ -25,49 +25,28 @@ namespace UnityEngine.UI
 
         static LayoutRebuilder()
         {
-            RectTransform.reapplyDrivenProperties += ReapplyDrivenProperties
+            RectTransform.reapplyDrivenProperties += ReapplyDrivenProperties;
         }
 
         static void ReapplyDrivenProperties(RectTransform driven)
         {
             MarkLayoutForRebuild(driven);
         }
-        //todo
+
+        public Transform transform {  get { return m_ToRebuild; } }
+
+        public bool IsDestroyed()
+        {
+            return m_ToRebuild == null;
+        }
 
         static void StripDisabledBehavioursFromList(List<Component> components)
         {
             components.RemoveAll(e => e is Behaviour && !((Behaviour) e).isActiveAndEnabled);
         }
 
-        public static void MarkLayoutForRebuilder(RectTransform rect)
-        {
-            if (rect == null)
-                return;
-            var comps = ListPool<Component>.Get();
-            
-        }
+        //todo
 
-        private void PerformLayoutCalculation(RectTransform rect, UnityAction<Component> action)
-        {
-            if (rect == null)
-                return;
-            var components = ListPool<Component>.Get();
-            rect.GetComponents(typeof(ILayoutElement), components);
-            StripDisabledBehavioursFromList(components);
-            if (components.Count > 0 || rect.GetComponent(typeof(ILayoutGroup)))
-            {
-                for (int i = 0; i < rect.childCount; i++)
-                {
-                    PerformLayoutCalculation(rect.GetChild(i) as RectTransform, action);
-                }
-
-                for (int i = 0; i < components.Count; i++)
-                {
-                    action(components[i]);
-                }
-            }
-            ListPool<Component>.Release(components);
-        }
         
         public void Rebuild(CanvasUpdate executing)
         {
@@ -75,7 +54,9 @@ namespace UnityEngine.UI
             {
                 case CanvasUpdate.Layout:
                     PerformLayoutCalculation(m_ToRebuild, e => (e as ILayoutElement).CalculateLayoutInputHorizontal());
+                    PerformLayoutControl(m_ToRebuild, e => (e as ILayoutController).SetLayoutHorizontal());
                     //todo
+                    break;
             }
         }
 
@@ -105,15 +86,90 @@ namespace UnityEngine.UI
 
                 for (int i = 0; i < rect.childCount; i++)
                 {
-                    PerformLayoutControl(rect.GetChild(i));
+                    PerformLayoutControl(rect.GetChild(i) as RectTransform, action);
                 }
             }
+
+            ListPool<Component>.Release(components);
+        }
+        
+        private void PerformLayoutCalculation(RectTransform rect, UnityAction<Component> action)
+        {
+            if (rect == null)
+                return;
+            var components = ListPool<Component>.Get();
+            rect.GetComponents(typeof(ILayoutElement), components);
+            StripDisabledBehavioursFromList(components);
+            if (components.Count > 0 || rect.GetComponent(typeof(ILayoutGroup)))
+            {
+                for (int i = 0; i < rect.childCount; i++)
+                {
+                    PerformLayoutCalculation(rect.GetChild(i) as RectTransform, action);
+                }
+
+                for (int i = 0; i < components.Count; i++)
+                {
+                    action(components[i]);
+                }
+            }
+            ListPool<Component>.Release(components);
         }
 
-        public Transform transform { get; }
+        public static void MarkLayoutForRebuild(RectTransform rect)
+        {
+            if (rect == null)
+                return;
+
+            var comps = ListPool<Component>.Get();
+            RectTransform layoutRoot = rect;
+            while(true)
+            {
+                var parent = layoutRoot.parent as RectTransform;
+                if (!ValidLayoutGroup(parent, comps))
+                    break;
+                layoutRoot = parent;
+            }
+
+            if(layoutRoot == rect && (!ValidController(layoutRoot, comps)))
+            {
+                ListPool<Component>.Release(comps);
+                return;
+            }
+            MarkLayoutRootForRebuild(layoutRoot);
+            ListPool<Component>.Release(comps);
+        }
+
+        private static bool ValidLayoutGroup(RectTransform parent, List<Component> comps)
+        {
+            if (parent == null)
+                return false;
+            parent.GetComponents(typeof(ILayoutGroup), comps);
+            StripDisabledBehavioursFromList(comps);
+            return comps.Count > 0;
+        }
+
+        private static bool ValidController(RectTransform layoutRoot, List<Component> comps)
+        {
+            if (layoutRoot == null)
+                return false;
+            layoutRoot.GetComponents(typeof(ILayoutController), comps);
+            StripDisabledBehavioursFromList(comps);
+            return comps.Count > 0;
+        }
+
+        private static void MarkLayoutRootForRebuild(RectTransform controller)
+        {
+            if (controller == null)
+                return;
+            var rebuilder = s_Rebuilders.Get();
+            rebuilder.Initialize(controller);
+            if(!CanvasUpdateRegistry.TryRegisterCanvasElementForLayoutRebuild(rebuilder))
+                s_Rebuilders.Release(rebuilder);
+        }
+
         public void LayoutComplete()
         {
-            throw new System.NotImplementedException();
+            s_Rebuilders.Release(this);
         }
 
         public void GraphicUpdateComplete()
@@ -121,9 +177,14 @@ namespace UnityEngine.UI
             throw new System.NotImplementedException();
         }
 
-        public bool IsDestroyed()
+        public override int GetHashCode()
         {
-            throw new System.NotImplementedException();
+            return m_CachedHashFromTransform;
+        }
+
+        public override string ToString()
+        {
+            return "(Layout Rebuilder for) " + m_ToRebuild;
         }
     }
 }
