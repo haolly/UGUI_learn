@@ -129,6 +129,7 @@ namespace UnityEngine.UI
             m_PerformingLayoutUpdate = false;
             
             //todo culling
+            ClipperRegistry.instance.Cull();
         }
 
         private static int ParentCount(Transform child)

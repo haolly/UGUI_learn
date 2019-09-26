@@ -1,5 +1,10 @@
 ﻿namespace UnityEngine.UI
 {
+    public interface IClipper
+    {
+        void PerformClipping();
+    }
+    
     public interface IClippable
     {
         GameObject gameObject { get; }

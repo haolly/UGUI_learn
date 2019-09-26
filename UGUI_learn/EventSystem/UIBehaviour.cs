@@ -41,7 +41,7 @@
 
         }
 
-        protected virtual void OnTransformparentChanged()
+        protected virtual void OnTransformParentChanged()
         {
         }
 
