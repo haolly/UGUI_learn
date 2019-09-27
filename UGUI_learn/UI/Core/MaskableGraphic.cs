@@ -9,6 +9,10 @@ namespace UnityEngine.UI
         [NonSerialized] protected bool m_ShouldRecalculateStencil = true;
 
         [NonSerialized] protected Material m_MaskMaterial;
+        
+        [NonSerialized] protected int m_StencilValue;
+
+        [NonSerialized] protected internal Mask m_Mask;
 
         [NonSerialized] private RectMask2D m_ParentMask;
 
@@ -35,9 +39,6 @@ namespace UnityEngine.UI
             }
         }
 
-        [NonSerialized] protected int m_StencilValue;
-
-        [NonSerialized] protected internal Mask m_Mask;
 
         protected override void Awake()
         {
@@ -70,7 +71,15 @@ namespace UnityEngine.UI
         private void UpdateClipParent()
         {
             var newParent = (maskable && IsActive()) ? MaskUtilities.GetRectMaskForClippable(this) : null;
-            //todo
+            if (m_ParentMask != null && (newParent != m_ParentMask || !newParent.IsActive()))
+            {
+                m_ParentMask.RemoveClippable(this);
+                UpdateCull(false);
+            }
+            if(newParent != null && newParent.IsActive())
+                newParent.AddClippable(this);
+
+            m_ParentMask = newParent;
         }
 
         public void RecalculateClipping()

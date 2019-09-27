@@ -70,10 +70,25 @@ namespace UnityEngine.UI
             vertex.tangent = m_Tangents[i];
         }
         
+        
         //todo 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            ListPool<Vector3>.Release(m_Positions);
+            ListPool<Color32>.Release(m_Colors);
+            ListPool<Vector2>.Release(m_Uv0S);
+            ListPool<Vector2>.Release(m_Uv1S);
+            ListPool<Vector3>.Release(m_Normals);
+            ListPool<Vector4>.Release(m_Tangents);
+            ListPool<int>.Release(m_Indices);
+
+            m_Positions = null;
+            m_Colors = null;
+            m_Uv0S = null;
+            m_Uv1S = null;
+            m_Normals = null;
+            m_Tangents = null;
+            m_Indices = null;
         }
 
         public void AddVert(Vector3 position, Color32 color, Vector2 uv0, Vector2 uv1, Vector3 normal, Vector4 tangent)

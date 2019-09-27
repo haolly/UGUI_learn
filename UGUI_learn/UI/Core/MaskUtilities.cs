@@ -99,7 +99,44 @@ namespace UnityEngine.UI
 
         public static RectMask2D GetRectMaskForClippable(IClippable clippable)
         {
-           //todo 
+            List<RectMask2D> rectMaskComponents = ListPool<RectMask2D>.Get();
+            List<Canvas> canvasComponents = ListPool<Canvas>.Get();
+            RectMask2D componentToReturn = null;
+            clippable.rectTransform.GetComponentsInParent(false, rectMaskComponents);
+            if (rectMaskComponents.Count > 0)
+            {
+                for (int i = 0; i < rectMaskComponents.Count; i++)
+                {
+                    componentToReturn = rectMaskComponents[i];
+                    if (componentToReturn.gameObject == clippable.gameObject)
+                    {
+                        componentToReturn = null;
+                        continue;
+                    }
+
+                    if (!componentToReturn.isActiveAndEnabled)
+                    {
+                        componentToReturn = null;
+                        continue;
+                    }
+
+                    clippable.rectTransform.GetComponentsInParent(false, canvasComponents);
+                    for (int j = 0; j < canvasComponents.Count; j++)
+                    {
+                        if (!IsDescendantOfSelf(canvasComponents[j].transform, componentToReturn.transform) &&
+                            canvasComponents[j].overrideSorting)
+                        {
+                            componentToReturn = null;
+                            break;
+                        }
+                    }
+
+                    return componentToReturn;
+                }
+            }
+            ListPool<RectMask2D>.Release(rectMaskComponents);
+            ListPool<Canvas>.Release(canvasComponents);
+            return componentToReturn;
         }
 
         public static void GetRectMaskForClip(RectMask2D clipper, List<RectMask2D> masks)

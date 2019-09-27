@@ -171,6 +171,26 @@ namespace UnityEngine.UI
             get { return s_WhiteTexture; }
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            CacheCanvas();
+            GraphicRegistry.RegisterGraphicForCanvas(canvas, this);
+            
+            if(s_WhiteTexture == null)
+                s_WhiteTexture = Texture2D.whiteTexture;
+            
+            SetAllDirty();
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            GraphicRegistry.UnregisterGraphicForCanvas(canvas, this);
+            CanvasUpdateRegistry.UnRegisterCanvasElementForRebuild(this);
+            //todo
+        }
+
 
         public virtual void SetAllDirty()
         {
@@ -208,7 +228,41 @@ namespace UnityEngine.UI
             if (m_OnDirtyMaterialCallback != null)
                 m_OnDirtyMaterialCallback();
         }
-        
+
+        protected override void OnRectTransformDimensionsChange()
+        {
+            if (gameObject.activeInHierarchy)
+            {
+                if (CanvasUpdateRegistry.IsRebuildingLayout())
+                {
+                    SetVerticesDirty();
+                }
+                else
+                {
+                    SetVerticesDirty();
+                    SetLayoutDirty();
+                }
+            }
+        }
+
+        protected override void OnBeforeTransformParentChanged()
+        {
+            GraphicRegistry.UnregisterGraphicForCanvas(canvas, this);
+            LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
+        }
+
+        protected override void OnTransformParentChanged()
+        {
+            base.OnTransformParentChanged();
+            m_Canvas = null;
+            if (!IsActive())
+                return;
+            
+            CacheCanvas();
+            GraphicRegistry.RegisterGraphicForCanvas(canvas, this);
+            SetAllDirty();
+        }
+
         public void Rebuild(CanvasUpdate executing)
         {
             if (canvasRenderer.cull)

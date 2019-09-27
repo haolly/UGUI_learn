@@ -128,8 +128,33 @@ namespace UnityEngine.UI
             m_LayoutRebuildQueue.Clear();
             m_PerformingLayoutUpdate = false;
             
-            //todo culling
             ClipperRegistry.instance.Cull();
+
+            m_PerformingGraphicUpdate = true;
+            for (int i = (int)CanvasUpdate.PreRender; i < (int)CanvasUpdate.MaxUpdateValue; i++)
+            {
+                for (int j = 0; j < instance.m_GraphicRebuildQueue.Count; j++)
+                {
+                    try
+                    {
+                        var element = instance.m_GraphicRebuildQueue[j];
+                        if (ObjectValidForUpdate(element))
+                            element.Rebuild((CanvasUpdate) i);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e, instance.m_GraphicRebuildQueue[j].transform);
+                    }
+                }
+            }
+
+            for (int i = 0; i < m_GraphicRebuildQueue.Count; i++)
+            {
+                m_GraphicRebuildQueue[i].GraphicUpdateComplete();
+            }
+            
+            instance.m_GraphicRebuildQueue.Clear();
+            m_PerformingGraphicUpdate = false;
         }
 
         private static int ParentCount(Transform child)
@@ -191,6 +216,16 @@ namespace UnityEngine.UI
             }
 
             return m_GraphicRebuildQueue.AddUnique(element);
+        }
+
+        public static bool IsRebuildingLayout()
+        {
+            return instance.m_PerformingLayoutUpdate;
+        }
+
+        public static bool IsRebuildingGraphics()
+        {
+            return instance.m_PerformingGraphicUpdate;
         }
     }
 }

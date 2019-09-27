@@ -50,6 +50,7 @@
     <Compile Include="UI\Core\Culling\IClipRegion.cs" />
     <Compile Include="UI\Core\Culling\RectangularVertexClipper.cs" />
     <Compile Include="UI\Core\Graphic.cs" />
+    <Compile Include="UI\Core\GraphicRegistry.cs" />
     <Compile Include="UI\Core\Image.cs" />
     <Compile Include="UI\Core\IMaskable.cs" />
     <Compile Include="UI\Core\IMaterialModifier.cs" />
