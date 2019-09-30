@@ -82,7 +82,9 @@ namespace UnityEngine.UI
             m_ParentMask = newParent;
         }
 
-        public void RecalculateClipping()
+        #region IClippable 
+
+        public virtual void RecalculateClipping()
         {
             UpdateClipParent();
         }
@@ -102,6 +104,8 @@ namespace UnityEngine.UI
                 canvasRenderer.DisableRectClipping();
         }
 
+        #endregion
+        
         private void UpdateCull(bool cull)
         {
             var cullingChanged = canvasRenderer.cull != cull;
@@ -161,11 +165,15 @@ namespace UnityEngine.UI
             SetMaterialDirty();
         }
 
-        public void RecalculateMasking()
+        #region IMaskable
+
+        public virtual void RecalculateMasking()
         {
             m_ShouldRecalculateStencil = true;
             SetMaterialDirty();
         }
+        
+        #endregion
 
         public virtual Material GetModifiedMaterial(Material baseMaterial)
         {

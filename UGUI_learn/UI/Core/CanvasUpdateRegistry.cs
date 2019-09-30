@@ -218,6 +218,36 @@ namespace UnityEngine.UI
             return m_GraphicRebuildQueue.AddUnique(element);
         }
 
+        public static void UnRegisterCanvasElementForRebuild(ICanvasElement element)
+        {
+            instance.InternalUnRegisterCanvasElementForLayoutRebuild(element);
+            instance.InternalUnRegisterCanvasElementForGraphicRebuild(element);
+        }
+
+        private void InternalUnRegisterCanvasElementForLayoutRebuild(ICanvasElement element)
+        {
+            if (m_PerformingLayoutUpdate)
+            {
+                Debug.LogError(string.Format("Try to remove {0} from rebuild list while we are already inside a rebuild loop." +
+                                             "This is not supported.", element));
+                return;
+            }
+            element.LayoutComplete();
+            instance.m_LayoutRebuildQueue.Remove(element);
+        }
+
+        private void InternalUnRegisterCanvasElementForGraphicRebuild(ICanvasElement element)
+        {
+            if (m_PerformingGraphicUpdate)
+            {
+                Debug.LogError(string.Format("Trying to remove {0} from rebuild list while we are already inside a " +
+                                             "rebuild loop. This is not supported.", element));
+                return;
+            }
+            element.GraphicUpdateComplete();
+            instance.m_GraphicRebuildQueue.Remove(element);
+        }
+
         public static bool IsRebuildingLayout()
         {
             return instance.m_PerformingLayoutUpdate;

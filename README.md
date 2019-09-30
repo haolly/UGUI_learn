@@ -1,5 +1,7 @@
 通过抄一遍代码来学习UGUI 的工作原理
 
+Unity没有开源Canvas/CanvasRender的源码
+
 可以被剪裁的对象：IClippable
 IClippable 的cull 接口是对 clip 的一个优化？ 如果没有在rect里面，直接cull掉
 可以被mask 的对象: IMaskable
@@ -12,7 +14,10 @@ RectMask2D:PerformClipping()
 
 RectMask2D VS Mask
 RectMask2D 是用 rectClip + cull 来实现
-Mask 是用 todo
+Mask 是用 stencil, todo
+
+MaskableGraphic 实现了这两种机制，前者在Notify2DMaskStageChanged() 函数中触发，后者在NotifyStencilStateChanged() 函数中触发
+前者在 RectMask2D 的OnEnable/OnDisable 中触发，后者在 Mask and(or) MaskableGraphic 的 OnEanble/OnDisable 中触发
 
 
 RectMask2D:OnEnable/OnDisable --> Notify2DMaskStageChanged()
@@ -37,13 +42,19 @@ IMaterialModifier 有哪些？TODO
 
 所有显示对象的基类是 Graphic有layoutDirty/verticesDirty/materialDirty
 三个层次的dirty
+verticesDirty 会导致mesh 的重构
 
 TODO
 啥时候被加入layout 列表？
-OnRecttransformDimensionsChange/OnTransformParentChanged/
+OnRecttransformDimensionsChange/OnTransformParentChanged/ Graphic:OnEnable/OnDisable,OnDidApplyAnimationProperties
 1，Graphic:SetLayoutDirty()
 LayoutRebuilder 负责具体执行
 
 啥时候被加入graphic 列表？
+verticesDirty/materialDirty的时候
 todo
+
+Canvas的排序是怎么做的？
+
+EventSystem是如何将一个点击事件派送到一个按钮上的？
 

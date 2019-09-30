@@ -132,5 +132,18 @@ namespace UnityEngine.UI
             mesh.SetTriangles(m_Indices, 0);
             mesh.RecalculateBounds();
         }
+
+        public void AddUIVertexStream(List<UIVertex> verts, List<int> indices)
+        {
+            if (verts != null)
+            {
+                CanvasRenderer.AddUIVertexStream(verts, m_Positions, m_Colors, m_Uv0S, m_Uv1S, m_Normals, m_Tangents);
+            }
+
+            if (indices != null)
+            {
+                m_Indices.AddRange(indices);
+            }
+        }
     }
 }

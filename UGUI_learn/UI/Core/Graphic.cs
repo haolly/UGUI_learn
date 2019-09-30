@@ -113,6 +113,9 @@ namespace UnityEngine.UI
             }
         }
 
+        /// <summary>
+        /// Find the nearest parent canvas
+        /// </summary>
         private void CacheCanvas()
         {
             var list = ListPool<Canvas>.Get();
@@ -185,12 +188,31 @@ namespace UnityEngine.UI
 
         protected override void OnDisable()
         {
-            base.OnDisable();
             GraphicRegistry.UnregisterGraphicForCanvas(canvas, this);
             CanvasUpdateRegistry.UnRegisterCanvasElementForRebuild(this);
-            //todo
+            if(canvasRenderer != null)
+                canvasRenderer.Clear();
+            
+            LayoutRebuilder.MarkLayoutForRebuild(rectTransform);
+            base.OnDisable();
         }
 
+        protected override void OnCanvasHierarchyChanged()
+        {
+            Canvas currentCanvas = m_Canvas;
+            m_Canvas = null;
+
+            if (!IsActive())
+                return;
+            
+            CacheCanvas();
+            if (currentCanvas != m_Canvas)
+            {
+                GraphicRegistry.UnregisterGraphicForCanvas(currentCanvas, this);
+                if(IsActive())
+                    GraphicRegistry.RegisterGraphicForCanvas(canvas, this);
+            }
+        }
 
         public virtual void SetAllDirty()
         {
@@ -404,5 +426,16 @@ namespace UnityEngine.UI
                 return RectTransformUtility.PixelAdjustRect(rectTransform, canvas);
             }
         }
+
+        protected override void OnDidApplyAnimationProperties()
+        {
+            base.OnDidApplyAnimationProperties();
+            SetAllDirty();
+        }
+
+        public virtual void SetNativeSize()
+        {
+        }
+        
     }
 }
