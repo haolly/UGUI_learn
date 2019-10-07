@@ -40,6 +40,32 @@ namespace UnityEngine.EventSystem
             handler.OnPointerUp(ValidateEventData<PointerEventData>(eventData));
         }
 
+        private static readonly EventFunction<ISelectHandler> s_SelectHandler = Execute;
+
+        private static void Execute(ISelectHandler handler, BaseEventData eventData)
+        {
+            handler.OnSelect(eventData);
+        }
+
+        private static readonly EventFunction<IDeselectHandler> s_DeselectHandler = Execute;
+
+        private static void Execute(IDeselectHandler handler, BaseEventData eventData)
+        {
+            handler.OnDeselect(eventData);
+        }
+
+        private static readonly EventFunction<IUpdateSelectedHandler> s_UpdateSelectedHandler = Execute;
+
+        private static void Execute(IUpdateSelectedHandler handler, BaseEventData eventData)
+        {
+            handler.OnUpdateSelected(eventData);
+        }
+
+        public static EventFunction<IUpdateSelectedHandler> updateSelectedHandler
+        {
+            get { return s_UpdateSelectedHandler; }
+        }
+
         public static EventFunction<IPointerEnterHandler> pointerEnterHandler
         {
             get { return s_PointerEnterHandler; }
@@ -49,7 +75,14 @@ namespace UnityEngine.EventSystem
         {
             get { return s_PointerExitHandler; }
         }
-        
+
+        public static EventFunction<ISelectHandler> selectHandler
+        {
+            get { return s_SelectHandler; }
+        }
+
+        public static EventFunction<IDeselectHandler> deselectHandler => s_DeselectHandler;
+
         private static readonly ObjectPool<List<IEventSystemHandler>> s_HandlerListPool =
             new ObjectPool<List<IEventSystemHandler>>(null, l => l.Clear());
 

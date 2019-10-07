@@ -2,6 +2,210 @@
 {
     public class StandaloneInputModule : PointerInputModule
     {
-        
+        private float m_PrevActionTime;
+        private Vector2 m_LastMoveVector;
+        private int m_ConsecutiveMoveCount = 0;
+
+        private Vector2 m_LastMousePosition;
+        private Vector2 m_MousePosition;
+
+        private GameObject m_CurrentFocusedGameObject;
+
+        protected StandaloneInputModule()
+        {
+        }
+
+        [SerializeField] private string m_HorizontalAxis = "Horizontal";
+        private string m_VerticalAxis = "Vertical";
+        private string m_SubmitButton = "Submit";
+        private string m_CancelButton = "Cancel";
+        private float m_InputActionsPerSecond = 10;
+        private float m_RepeatDelay = 0.5f;
+        private bool m_ForceModuleActive;
+
+        public override void Process()
+        {
+            bool usedEvent = SendUpdateEventToSelectedObject();
+            if (eventSystem.sendNavigationEvents)
+            {
+                if (!usedEvent)
+                    usedEvent |= SendMoveEventToSelectedObject();
+                if (!usedEvent)
+                    SendSubmitEventToSelectedObject();
+            }
+
+            if (!ProcessTouchEvent() && input.mousePresent)
+                ProcessMouseEvent();
+        }
+
+        private bool ProcessTouchEvent()
+        {
+            for (int i = 0; i < input.touchCount; i++)
+            {
+                Touch touch = input.GetTouch(i);
+                if(touch.type == TouchType.Indirect)
+                    continue;
+
+                bool released;
+                bool pressed;
+                var pointer = GetTouchPointerEventData(touch, out pressed, out released);
+                ProcessTouchPress(pointer, pressed, released);
+                //todo
+            }
+        }
+
+        protected void ProcessTouchPress(PointerEventData pointerEventData, bool pressed, bool released)
+        {
+            var currentOverGo = pointerEventData.pointerCurrentRaycast.gameObject;
+            if (pressed)
+            {
+                pointerEventData.eligibleForClick = true;
+                pointerEventData.delta = Vector2.zero;
+                pointerEventData.dragging = false;
+                pointerEventData.useDragThreshold = true;
+                pointerEventData.pressPosition = pointerEventData.position;
+                pointerEventData.pointerPressRaycast = pointerEventData.pointerCurrentRaycast;
+                //todo
+            }
+        }
+
+        public override void UpdateModule()
+        {
+            m_LastMousePosition = m_MousePosition;
+            m_MousePosition = input.mousePosition;
+        }
+
+        public override bool IsModuleSupported()
+        {
+            return m_ForceModuleActive || input.mousePresent || input.touchSupported;
+        }
+
+        public override bool ShouldActiveModule()
+        {
+            if (!base.ShouldActiveModule())
+                return false;
+
+            var shouldActivate = m_ForceModuleActive;
+            shouldActivate |= input.GetButtonDown(m_SubmitButton);
+            shouldActivate |= input.GetButtonDown(m_CancelButton);
+            shouldActivate |= !Mathf.Approximately(input.GetAxisRaw(m_HorizontalAxis), 0.0f);
+            shouldActivate |= !Mathf.Approximately(input.GetAxisRaw(m_VerticalAxis), 0.0f);
+            shouldActivate |= (m_MousePosition - m_LastMousePosition).sqrMagnitude > 0.0f;
+            shouldActivate |= input.GetMouseButtonDown(0);
+
+            if (input.touchCount > 0)
+                shouldActivate = true;
+            return shouldActivate;
+        }
+
+        public override void ActivateModule()
+        {
+            base.ActivateModule();
+            m_MousePosition = input.mousePosition;
+            m_LastMousePosition = input.mousePosition;
+
+            var toSelect = eventSystem.currentSelectedGameObject;
+            if (toSelect == null)
+                toSelect = eventSystem.firstSelectedGameObject;
+            
+            eventSystem.SetSelectedGameObject(toSelect, GetBaseEventData());
+        }
+
+        public override void DeactivateModule()
+        {
+            base.DeactivateModule();
+            ClearSelection();
+        }
+
+        private bool SendUpdateEventToSelectedObject()
+        {
+            if (eventSystem.currentSelectedGameObject == null)
+                return false;
+
+            var data = GetBaseEventData();
+            ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.updateSelectedHandler);
+            return data.used;
+        }
+
+        protected bool SendSubmitEventToSelectedObject()
+        {
+            if (eventSystem.currentSelectedGameObject == null)
+                return false;
+            var data = GetBaseEventData();
+            if (input.GetButtonDown(m_SubmitButton))
+                ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.submitHandler);
+
+            if (input.GetButtonDown(m_CancelButton))
+                ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.candelHandler);
+
+            return data.used;
+        }
+
+        protected bool SendMoveEventToSelectedObject()
+        {
+            float time = Time.unscaledTime;
+            Vector2 movement = GetRawMoveVector();
+
+            if (Mathf.Approximately(movement.x, 0f) && Mathf.Approximately(movement.y, 0f))
+            {
+                m_ConsecutiveMoveCount = 0;
+                return false;
+            }
+
+            bool allow = input.GetButtonDown(m_HorizontalAxis) || input.GetButtonDown(m_VerticalAxis);
+            bool similarDir = (Vector2.Dot(movement, m_LastMoveVector) > 0);
+            if (!allow)
+            {
+                if (similarDir && m_ConsecutiveMoveCount == 1)
+                    allow = time > (m_PrevActionTime + m_RepeatDelay);
+                else
+                    allow = time > (m_PrevActionTime + 1f / m_InputActionsPerSecond);
+            }
+
+            if (!allow)
+                return false;
+
+
+            AxisEventData axisEventData = GetAxisEventData(movement.x, movement.y, 0.6f);
+            if (axisEventData.moveDir != MoveDirection.None)
+            {
+                ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, axisEventData, ExecuteEvents.moveHandler);
+                if (!similarDir)
+                    m_ConsecutiveMoveCount = 0;
+                m_ConsecutiveMoveCount++;
+                m_PrevActionTime = time;
+                m_LastMoveVector = movement;
+            }
+            else
+            {
+                m_ConsecutiveMoveCount = 0;
+            }
+
+            return axisEventData.used;
+        }
+
+        private Vector2 GetRawMoveVector()
+        {
+            Vector2 move = Vector2.zero;
+            move.x = input.GetAxisRaw(m_HorizontalAxis);
+            move.y = input.GetAxisRaw(m_VerticalAxis);
+            if (input.GetButtonDown(m_HorizontalAxis))
+            {
+                if (move.x < 0)
+                    move.x = -1f;
+                if (move.x > 0)
+                    move.x = 1;
+            }
+
+            if (input.GetButtonDown(m_VerticalAxis))
+            {
+                if (move.y < 0)
+                    move.y = -1;
+                if (move.y > 0)
+                    move.y = 1;
+            }
+
+            return move;
+        }
     }
 }

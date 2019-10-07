@@ -436,6 +436,60 @@ namespace UnityEngine.UI
         public virtual void SetNativeSize()
         {
         }
-        
+
+        public virtual bool Raycast(Vector2 sp, Camera eventCamera)
+        {
+            if (!isActiveAndEnabled)
+                return false;
+            var t = transform;
+            var components = ListPool<Component>.Get();
+            bool ignoreParentGroup = false;
+            bool continueTraversal = true;
+
+            while (t != null)
+            {
+                // get 出来的component 排序是怎么样的？ 跟排序没有关系，get的出来的只是当前节点的component
+                t.GetComponents(components);
+                for (int i = 0; i < components.Count; i++)
+                {
+                    var canvas = components[i] as Canvas;
+                    if (canvas != null && canvas.overrideSorting)
+                        continueTraversal = false;
+
+                    var filter = components[i] as ICanvasRaycastFilter;
+                    if(filter == null)
+                        continue;
+
+                    var raycastValid = true;
+                    var group = components[i] as CanvasGroup;
+                    if (group != null)
+                    {
+                        if (ignoreParentGroup == false && group.ignoreParentGroups)
+                        {
+                            ignoreParentGroup = true;
+                            raycastValid = filter.IsRaycastLocationValid(sp, eventCamera);
+                        }
+                        else if (!ignoreParentGroup)
+                        {
+                            raycastValid = filter.IsRaycastLocationValid(sp, eventCamera);
+                        }
+                    }
+                    else
+                    {
+                        raycastValid = filter.IsRaycastLocationValid(sp, eventCamera);
+                    }
+
+                    if (!raycastValid)
+                    {
+                        ListPool<Component>.Release(components);
+                        return false;
+                    }
+                }
+
+                t = continueTraversal ? t.parent : null;
+            }
+            ListPool<Component>.Release(components);
+            return true;
+        }
     }
 }

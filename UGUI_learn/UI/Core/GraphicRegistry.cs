@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI.Collections;
 
 namespace UnityEngine.UI
@@ -52,6 +53,16 @@ namespace UnityEngine.UI
                 if (graphics.Count == 0)
                     instance.m_Graphics.Remove(c);
             }
+        }
+        
+        private static readonly List<Graphic> s_EmptyList = new List<Graphic>();
+
+        public static IList<Graphic> GetGraphicsForCanvas(Canvas canvas)
+        {
+            IndexedSet<Graphic> graphics;
+            if (instance.m_Graphics.TryGetValue(canvas, out graphics))
+                return graphics;
+            return s_EmptyList;
         }
     }
 }

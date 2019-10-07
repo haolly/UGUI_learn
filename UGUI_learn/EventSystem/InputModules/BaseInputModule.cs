@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.EventSystem.EventData;
 
 namespace UnityEngine.EventSystem
 {
@@ -11,6 +10,7 @@ namespace UnityEngine.EventSystem
 
         private EventSystem m_EventSystem;
         private BaseEventData m_BaseEventData;
+        private AxisEventData m_AxisEventData;
 
         protected BaseInput m_InputOverride;
         protected BaseInput m_DefaultInput;
@@ -173,6 +173,17 @@ namespace UnityEngine.EventSystem
                 m_BaseEventData = new BaseEventData(eventSystem);
             m_BaseEventData.Reset();
             return m_BaseEventData;
+        }
+
+        protected virtual AxisEventData GetAxisEventData(float x, float y, float moveDeadZone)
+        {
+            if(m_AxisEventData == null)
+                m_AxisEventData = new AxisEventData(eventSystem);
+            
+            m_AxisEventData.Reset();
+            m_AxisEventData.moveVector = new Vector2(x, y);
+            m_AxisEventData.moveDir = DetermineMoveDirection(x, y, moveDeadZone);
+            return m_AxisEventData;
         }
 
         public virtual bool IsPointerOverGameObject(int pointerId)

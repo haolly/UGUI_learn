@@ -29,4 +29,19 @@
     {
         void OnPointerClick(PointerEventData eventData);
     }
+
+    public interface ISelectHandler : IEventSystemHandler
+    {
+        void OnSelect(BaseEventData eventData);
+    }
+
+    public interface IDeselectHandler : IEventSystemHandler
+    {
+        void OnDeselect(BaseEventData eventData);
+    }
+
+    public interface IUpdateSelectedHandler : IEventSystemHandler
+    {
+        void OnUpdateSelected(BaseEventData eventData);
+    }
 }

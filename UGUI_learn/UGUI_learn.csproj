@@ -42,6 +42,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventSystem\EventData\AxisEventData.cs" />
     <Compile Include="EventSystem\EventData\BaseEventData.cs" />
     <Compile Include="EventSystem\EventData\PointerEventData.cs" />
     <Compile Include="EventSystem\EventInterfaces.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="EventSystem\InputModules\PointerInputModule.cs" />
     <Compile Include="EventSystem\InputModules\StandaloneInputModule.cs" />
     <Compile Include="EventSystem\MoveDirection.cs" />
+    <Compile Include="EventSystem\RaycasterManager.cs" />
     <Compile Include="EventSystem\Raycasters\BaseRaycaster.cs" />
     <Compile Include="EventSystem\RaycastResult.cs" />
     <Compile Include="EventSystem\UIBehaviour.cs" />
@@ -62,6 +64,7 @@
     <Compile Include="UI\Core\Culling\IClipRegion.cs" />
     <Compile Include="UI\Core\Culling\RectangularVertexClipper.cs" />
     <Compile Include="UI\Core\Graphic.cs" />
+    <Compile Include="UI\Core\GraphicRaycaster.cs" />
     <Compile Include="UI\Core\GraphicRegistry.cs" />
     <Compile Include="UI\Core\Image.cs" />
     <Compile Include="UI\Core\IMaskable.cs" />
@@ -77,6 +80,7 @@
     <Compile Include="UI\Core\StencilMaterial.cs" />
     <Compile Include="UI\Core\Utility\ListPool.cs" />
     <Compile Include="UI\Core\Utility\ObjectPool.cs" />
+    <Compile Include="UI\Core\Utility\ReflectionMethodsCache.cs" />
     <Compile Include="UI\Core\Utility\VertexHelper.cs" />
     <Compile Include="UI\Core\VertexModifiers\IMeshModifier.cs" />
   </ItemGroup>

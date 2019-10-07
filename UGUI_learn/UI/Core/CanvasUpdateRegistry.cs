@@ -180,8 +180,8 @@ namespace UnityEngine.UI
         }
         
 
-        // if return positive value, then the order is y x
-        // so the result is, sorted by parentCount increase
+        // if return positive value, which means x is greater than y, so the order is y x
+        // so the result is, sorted by parentCount ascent
         private static int SortLayoutList(ICanvasElement x, ICanvasElement y)
         {
             Transform t1 = x.transform;

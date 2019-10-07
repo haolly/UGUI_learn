@@ -174,7 +174,7 @@ namespace UnityEngine.UI
 
         public void GraphicUpdateComplete()
         {
-            throw new System.NotImplementedException();
+            // do nothing
         }
 
         public override int GetHashCode()

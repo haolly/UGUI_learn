@@ -57,4 +57,21 @@ todo
 Canvas的排序是怎么做的？
 
 EventSystem是如何将一个点击事件派送到一个按钮上的？
+GraphicRaycaster 作为EventSystem 的一个module 来处理点击事件；
+处理逻辑：找到当前Canvas 所对应的所有Graphic 对象并检测raycaster 位置是否正确，(每个Graphic对象在OnEnable的时候都会去注册自己跟父Canvas的关系) 
+然后排除掉所有朝向与摄像机朝向角度大于90度的，以及所有位于摄像机后面的，最后按照 DESCENT order by depth/sortOrderPriority/sortingLayer/sortingOrder/depth/distance 排序
+
+
+ICanvasRaycasterFilter 接口表示一个可以被Raycaster 的对象, Image 对象实现该接口
+
+EventSystem:Update -> inputModule:Process() -> StandaloneInputModule:Process() -> ProcessTouchEvents() ->GetTouchPointerEventData() -> EventSystem:RaycastAll() -> raycastModule:Raycast()
+
+
+EventInterfaces.cs 中定义了相应的接口，例如 IPointerClickHandler / IBeginDragHandler/ IDragHandler/ IPointerDownHandler 等等
+Selectable 实现了 MoveHandler+PointerDownHandler + PointerDownHandler + PointerEnterHandler + PointerExitHandler + SelectHandler + DeselectHandler
+Button 继承了 Selectable, 并且自己实现了 IPointerClickHandler
+
+ExecuteEvents 类负责调用相应的事件 handler 进行处理
+
+
 

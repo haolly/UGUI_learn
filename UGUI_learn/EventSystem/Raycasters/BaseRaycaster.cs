@@ -28,8 +28,13 @@ namespace UnityEngine.EventSystem
         protected override void OnEnable()
         {
             base.OnEnable();
-            RaycastManager.AddRaycaster(this);
+            RaycasterManager.AddRaycaster(this);
         }
-        //todo
+
+        protected override void OnDisable()
+        {
+            RaycasterManager.RemoveRaycaster(this);
+            base.OnDisable();
+        }
     }
 }
