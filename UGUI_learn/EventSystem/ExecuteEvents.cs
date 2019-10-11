@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
@@ -29,6 +28,8 @@ namespace UnityEngine.EventSystem
         {
             handler.OnPointerExit(ValidateEventData<PointerEventData>(eventData));
         }
+
+        private static readonly EventFunction<IPointerDownHandler> s_PointerDownHandler = Execute;
 
         private static void Execute(IPointerDownHandler handler, BaseEventData eventData)
         {
@@ -61,6 +62,13 @@ namespace UnityEngine.EventSystem
             handler.OnUpdateSelected(eventData);
         }
 
+        private static readonly EventFunction<IDragHandler> s_DragHandler = Execute;
+
+        private static void Execute(IDragHandler handler, BaseEventData eventData)
+        {
+            handler.OnDrag(ValidateEventData<PointerEventData>(eventData));
+        }
+
         public static EventFunction<IUpdateSelectedHandler> updateSelectedHandler
         {
             get { return s_UpdateSelectedHandler; }
@@ -81,10 +89,30 @@ namespace UnityEngine.EventSystem
             get { return s_SelectHandler; }
         }
 
+        public static EventFunction<IPointerDownHandler> pointerDownHandler => s_PointerDownHandler;
+
         public static EventFunction<IDeselectHandler> deselectHandler => s_DeselectHandler;
+
+        public static EventFunction<IDragHandler> dragHandler => s_DragHandler;
+        
 
         private static readonly ObjectPool<List<IEventSystemHandler>> s_HandlerListPool =
             new ObjectPool<List<IEventSystemHandler>>(null, l => l.Clear());
+
+
+        private static void GetEventChain(GameObject root, IList<Transform> eventChain)
+        {
+            eventChain.Clear();
+            if (root == null)
+                return;
+            var t = root.transform;
+            while (t != null)
+            {
+                eventChain.Add(t);
+                t = t.parent;
+            }
+        }
+        
 
         public static bool Execute<T>(GameObject target, BaseEventData eventData, EventFunction<T> functor)
             where T : IEventSystemHandler
@@ -121,6 +149,24 @@ namespace UnityEngine.EventSystem
             s_HandlerListPool.Release(internalHandlers);
             return handlerCount > 0;
         }
+        
+        private static readonly List<Transform> s_InternalTransformList = new List<Transform>(30);
+
+        public static GameObject ExecuteHierarchy<T>(GameObject root, BaseEventData eventData,
+            EventFunction<T> callback) where T : IEventSystemHandler
+        {
+            GetEventChain(root, s_InternalTransformList);
+            //NOTE: 深度优先 liuhao
+            for (int i = 0; i < s_InternalTransformList.Count; i++)
+            {
+                var transform = s_InternalTransformList[i];
+                if (Execute(transform.gameObject, eventData, callback))
+                    return transform.gameObject;
+            }
+
+            return null;
+        }
+        
 
         private static void GetEventList<T>(GameObject go, IList<IEventSystemHandler> results)
             where T : IEventSystemHandler
@@ -153,5 +199,30 @@ namespace UnityEngine.EventSystem
                 return behaviour.isActiveAndEnabled;
             return true;
         }
+
+        public static bool CanHandleEvent<T>(GameObject go) where T : IEventSystemHandler
+        {
+            var internalHandlers = s_HandlerListPool.Get();
+            GetEventList<T>(go, internalHandlers);
+            var handlerCount = internalHandlers.Count;
+            s_HandlerListPool.Release(internalHandlers);
+            return handlerCount != 0;
+        }
+
+        public static GameObject GetEventHandler<T>(GameObject root) where T : IEventSystemHandler
+        {
+            if (root == null)
+                return null;
+            Transform t = root.transform;
+            while (t != null)
+            {
+                if (CanHandleEvent<T>(t.gameObject))
+                    return t.gameObject;
+                t = t.parent;
+            }
+
+            return null;
+        }
+        
     }
 }

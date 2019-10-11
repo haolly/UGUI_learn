@@ -35,7 +35,9 @@
             }
 
             if (!ProcessTouchEvent() && input.mousePresent)
-                ProcessMouseEvent();
+            {
+                //ProcessMouseEvent();
+            }
         }
 
         private bool ProcessTouchEvent()
@@ -50,12 +52,25 @@
                 bool pressed;
                 var pointer = GetTouchPointerEventData(touch, out pressed, out released);
                 ProcessTouchPress(pointer, pressed, released);
-                //todo
+
+                if (!released)
+                {
+                    ProcessMove(pointer);
+                    ProcessDrag(pointer);
+                }
+                else
+                {
+                    RemovePointerData(pointer);
+                }
             }
+
+            //Note, 当前有几个手指在屏幕上面 liuhao
+            return input.touchCount > 0;
         }
 
         protected void ProcessTouchPress(PointerEventData pointerEventData, bool pressed, bool released)
         {
+            // TODO pointerCurrentRaycast 为null 的时候怎么办？
             var currentOverGo = pointerEventData.pointerCurrentRaycast.gameObject;
             if (pressed)
             {
@@ -65,7 +80,78 @@
                 pointerEventData.useDragThreshold = true;
                 pointerEventData.pressPosition = pointerEventData.position;
                 pointerEventData.pointerPressRaycast = pointerEventData.pointerCurrentRaycast;
-                //todo
+
+                DeselectIfSelectionChanged(currentOverGo, pointerEventData);
+
+                if (pointerEventData.pointerEnter != currentOverGo)
+                {
+                    HandlePointerExitAndEnter(pointerEventData, currentOverGo);
+                    pointerEventData.pointerEnter = currentOverGo;
+                }
+
+                var newPress =
+                    ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEventData, ExecuteEvents.pointerDownHandler);
+
+                //NOTE, 找不到的时候，设为为clickhandler，这样就可以处理click事件了
+                if (newPress == null)
+                {
+                    newPress = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+                }
+
+                float time = Time.unscaledTime;
+                if (newPress == pointerEventData.lastPress)
+                {
+                    var diffTime = time - pointerEventData.clickTime;
+                    if (diffTime < 0.3f)
+                        ++pointerEventData.clickCnt;
+                    else
+                        pointerEventData.clickCnt = 1;
+                }
+                else
+                {
+                    pointerEventData.clickCnt = 1;
+                }
+
+                pointerEventData.pointerPress = newPress;
+                pointerEventData.rawPointerPress = currentOverGo;
+                pointerEventData.clickTime = time;
+
+                pointerEventData.pointerDrag = ExecuteEvents.GetEventHandler<IDragHandler>(currentOverGo);
+
+                if (pointerEventData.pointerDrag != null)
+                    ExecuteEvents.Execute(pointerEventData.pointerDrag, pointerEventData,
+                        ExecuteEvents.initializePotentialDrag);
+            }
+
+            if (released)
+            {
+                ExecuteEvents.Execute(pointerEventData.pointerPress, pointerEventData, ExecuteEvents.pointerUpHandler);
+
+                var pointerUpHandler = ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentOverGo);
+                //Note, 也就是说，如果clickhandler在downhandler的上层，那么clickhandler是不会被触发的, liuhao
+                if (pointerEventData.pointerPress == pointerUpHandler && pointerEventData.eligibleForClick)
+                {
+                    ExecuteEvents.Execute(pointerEventData.pointerPress, pointerEventData,
+                        ExecuteEvents.pointerClickHandler);
+                }
+                else if (pointerEventData.pointerDrag != null && pointerEventData.dragging)
+                {
+                    ExecuteEvents.ExecuteHierarchy(currentOverGo, pointerEventData, ExecuteEvents.dropHandler);
+                }
+
+                pointerEventData.eligibleForClick = false;
+                pointerEventData.pointerPress = null;
+                pointerEventData.rawPointerPress = null;
+
+                if (pointerEventData.pointerDrag != null && pointerEventData.dragging)
+                    ExecuteEvents.Execute(pointerEventData.pointerDrag, pointerEventData, ExecuteEvents.endDragHandler);
+
+                pointerEventData.dragging = false;
+                pointerEventData.pointerDrag = null;
+
+                ExecuteEvents.ExecuteHierarchy(pointerEventData.pointerEnter, pointerEventData,
+                    ExecuteEvents.pointerExitHandler);
+                pointerEventData.pointerEnter = null;
             }
         }
 

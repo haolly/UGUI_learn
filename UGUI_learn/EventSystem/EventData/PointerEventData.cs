@@ -34,8 +34,10 @@ namespace UnityEngine.EventSystem
 
         public int pointerId { get; set; }
         
+        //Note, set in every frame to input.position, liuhao
         public Vector2 position { get; set; }
         public Vector2 delta { get; set; }
+        //Note set when process press event(down event, when pressed), liuhao
         public Vector2 pressPosition { get; set; }
         public float clickTime { get; set; }
         public int clickCnt { get; set; }
@@ -61,6 +63,23 @@ namespace UnityEngine.EventSystem
             useDragThreshold = true;
             dragging = false;
             button = InputButton.Left;
+        }
+
+        public bool IsPointerMoving()
+        {
+            return delta.sqrMagnitude > 0;
+        }
+
+        public GameObject pointerPress
+        {
+            get => m_PointerPress;
+            set
+            {
+                if (m_PointerPress == value)
+                    return;
+                lastPress = m_PointerPress;
+                m_PointerPress = value;
+            }
         }
     }
 }

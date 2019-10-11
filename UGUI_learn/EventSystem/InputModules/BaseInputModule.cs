@@ -160,7 +160,7 @@ namespace UnityEngine.EventSystem
                 Transform t = newEnterTarget.transform;
                 while (t != null && t.gameObject != commonRoot)
                 {
-                    ExecuteEvents.Execute(t.gameObject, currentPointerData, ExecuteEvents.pointerExitHandler);
+                    ExecuteEvents.Execute(t.gameObject, currentPointerData, ExecuteEvents.pointerEnterHandler);
                     currentPointerData.hovered.Add(t.gameObject);
                     t = t.parent;
                 }

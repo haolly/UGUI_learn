@@ -60,9 +60,63 @@ namespace UnityEngine.EventSystem
 
             // NOTE: find the most depth one 
             var raycast = FindFirstRaycast(m_RaycastResultCache);
+            // TODO: 这里有可能是null ?
             pointerData.pointerCurrentRaycast = raycast;
             m_RaycastResultCache.Clear();
             return pointerData;
+        }
+
+        private static bool ShouldStartDrag(Vector2 pressPos, Vector2 currentPos, float threshold,
+            bool useDragThreshold)
+        {
+            if (!useDragThreshold)
+                return true;
+            return (currentPos - pressPos).sqrMagnitude >= threshold * threshold;
+        }
+
+        protected virtual void ProcessMove(PointerEventData pointerEventData)
+        {
+            var targetGo = (Cursor.lockState == CursorLockMode.Locked
+                ? null
+                : pointerEventData.pointerCurrentRaycast.gameObject);
+            HandlePointerExitAndEnter(pointerEventData, targetGo);
+        }
+
+        protected virtual void ProcessDrag(PointerEventData pointerEventData)
+        {
+            if (!pointerEventData.IsPointerMoving() || Cursor.lockState == CursorLockMode.Locked ||
+                pointerEventData.pointerDrag == null)
+                return;
+
+            if (!pointerEventData.dragging && ShouldStartDrag(pointerEventData.pressPosition, pointerEventData.position,
+                    eventSystem.pixelDragThresHold, pointerEventData.useDragThreshold))
+            {
+                ExecuteEvents.Execute(pointerEventData.pointerDrag, pointerEventData, ExecuteEvents.beginDragHandler);
+                pointerEventData.dragging = true;
+            }
+
+            if (pointerEventData.dragging)
+            {
+                // Before dong drag we should cancel any pointer down state 
+                // And clear selection
+                if (pointerEventData.pointerPress != pointerEventData.pointerDrag)
+                {
+                    ExecuteEvents.Execute(pointerEventData.pointerPress, pointerEventData,
+                        ExecuteEvents.pointerUpHandler);
+                    pointerEventData.eligibleForClick = false;
+                    pointerEventData.pointerPress = null;
+                    pointerEventData.rawPointerPress = null;
+                }
+
+                ExecuteEvents.Execute(pointerEventData.pointerDrag, pointerEventData, ExecuteEvents.dragHandler);
+            }
+        }
+
+        protected void DeselectIfSelectionChanged(GameObject currentOverGo, BaseEventData pointerEvent)
+        {
+            var selectHandlerGo = ExecuteEvents.GetEventHandler<ISelectHandler>(currentOverGo);
+            if(selectHandlerGo != eventSystem.currentSelectedGameObject)
+                eventSystem.SetSelectedGameObject(null, pointerEvent);
         }
 
         protected void ClearSelection()

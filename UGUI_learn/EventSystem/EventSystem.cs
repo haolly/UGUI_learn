@@ -139,6 +139,7 @@ namespace UnityEngine.EventSystem
             }
         }
 
+        // Note, call by Select() in Selectable
         public void SetSelectedGameObject(GameObject selected)
         {
             SetSelectedGameObject(selected, baseEventDataCache);

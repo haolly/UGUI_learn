@@ -34,6 +34,7 @@
             get { return m_EventSystem.currentInputModule; }
         }
 
+        // set in Navigate() in Selectable
         public GameObject selectedObject
         {
             get { return m_EventSystem.currentSelectedGameObject; }

@@ -66,12 +66,15 @@ ICanvasRaycasterFilter 接口表示一个可以被Raycaster 的对象, Image 对
 
 EventSystem:Update -> inputModule:Process() -> StandaloneInputModule:Process() -> ProcessTouchEvents() ->GetTouchPointerEventData() -> EventSystem:RaycastAll() -> raycastModule:Raycast()
 
+StandaloneInputModule:ProcessTouchEvent() 处理touch事件
 
 EventInterfaces.cs 中定义了相应的接口，例如 IPointerClickHandler / IBeginDragHandler/ IDragHandler/ IPointerDownHandler 等等
 Selectable 实现了 MoveHandler+PointerDownHandler + PointerDownHandler + PointerEnterHandler + PointerExitHandler + SelectHandler + DeselectHandler
 Button 继承了 Selectable, 并且自己实现了 IPointerClickHandler
 
-ExecuteEvents 类负责调用相应的事件 handler 进行处理
+ExecuteEvents 类负责调用相应的事件 handler 进行处理, 主要有两个接口，ExecuteHierarchy / Execute, 前者从当前节点向上传递，直到遇到一个正常的handler来处理，后者直接在指定对象上面调用handler
+还有一接口GetEventHandler 是从当前节点开始向上找handler
+click 跟drop 事件是互斥的
 
 
 

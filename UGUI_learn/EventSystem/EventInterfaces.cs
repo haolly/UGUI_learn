@@ -44,4 +44,9 @@
     {
         void OnUpdateSelected(BaseEventData eventData);
     }
+
+    public interface IDragHandler : IEventSystemHandler
+    {
+        void OnDrag(PointerEventData eventData);
+    }
 }
