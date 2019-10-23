@@ -147,6 +147,7 @@ namespace UnityEngine.EventSystem
 
             var handlerCount = internalHandlers.Count;
             s_HandlerListPool.Release(internalHandlers);
+            //NOTE, 只要有处理handler 就返回true
             return handlerCount > 0;
         }
         

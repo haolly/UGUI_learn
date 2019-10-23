@@ -69,7 +69,7 @@ namespace UnityEngine.EventSystem
         {
             return delta.sqrMagnitude > 0;
         }
-
+        
         public GameObject pointerPress
         {
             get => m_PointerPress;
@@ -80,6 +80,16 @@ namespace UnityEngine.EventSystem
                 lastPress = m_PointerPress;
                 m_PointerPress = value;
             }
+        }
+
+        public Camera enterEventCamera
+        {
+            get { return pointerCurrentRaycast.module == null ? null : pointerCurrentRaycast.module.eventCamera; }
+        }
+
+        public Camera pressEventCamera
+        {
+            get { return pointerPressRaycast.module == null ? null : pointerPressRaycast.module.eventCamera; }
         }
     }
 }

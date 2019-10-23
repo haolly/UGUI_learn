@@ -60,7 +60,7 @@ namespace UnityEngine.EventSystem
 
             // NOTE: find the most depth one 
             var raycast = FindFirstRaycast(m_RaycastResultCache);
-            // TODO: 这里有可能是null ?
+            // Note, 这里有可能是 empty 的 dummy 对象，也就是说，这里永远会有一个值
             pointerData.pointerCurrentRaycast = raycast;
             m_RaycastResultCache.Clear();
             return pointerData;

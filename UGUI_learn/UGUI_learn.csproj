@@ -75,7 +75,11 @@
     <Compile Include="UI\Core\Mask.cs" />
     <Compile Include="UI\Core\MaskableGraphic.cs" />
     <Compile Include="UI\Core\MaskUtilities.cs" />
+    <Compile Include="UI\Core\Navigation.cs" />
     <Compile Include="UI\Core\RectMask2D.cs" />
+    <Compile Include="UI\Core\Scrollbar.cs" />
+    <Compile Include="UI\Core\ScrollRect.cs" />
+    <Compile Include="UI\Core\Selectable.cs" />
     <Compile Include="UI\Core\SetPropertyUtility.cs" />
     <Compile Include="UI\Core\StencilMaterial.cs" />
     <Compile Include="UI\Core\Utility\ListPool.cs" />

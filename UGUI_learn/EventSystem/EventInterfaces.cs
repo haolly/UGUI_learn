@@ -45,8 +45,33 @@
         void OnUpdateSelected(BaseEventData eventData);
     }
 
+    public interface IInitializePotentialDragHandler : IEventSystemHandler
+    {
+        void OnInitializePotentialDrag(PointerEventData eventData);
+    }
+
+    public interface IBeginDragHandler : IEventSystemHandler
+    {
+        void OnBeginDrag(PointerEventData eventData);
+    }
+
+    public interface IEndDragHandler : IEventSystemHandler
+    {
+        void OnEndDrag(PointerEventData eventData);
+    }
+
     public interface IDragHandler : IEventSystemHandler
     {
         void OnDrag(PointerEventData eventData);
+    }
+
+    public interface IScrollHandler : IEventSystemHandler
+    {
+        void OnScroll(PointerEventData eventData);
+    }
+
+    public interface IMoveHandler : IEventSystemHandler
+    {
+        void OnMove(AxisEventData eventData);
     }
 }
